@@ -1,0 +1,6 @@
+[master]
+45.76.168.49 ansible_ssh_user=root
+[nodes]
+45.32.85.6 ansible_ssh_user=root
+104.207.152.158 ansible_ssh_user=root
+45.32.66.115 ansible_ssh_user=root

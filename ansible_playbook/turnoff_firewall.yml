@@ -1,0 +1,25 @@
+- name: Disable firewall on kube-master and kube-worker nodes
+  hosts: kube-master:kube-nodes  # 这里的主机名需要与您的inventory文件中定义的主机名匹配
+  become: true
+
+  tasks:
+    - name: Stop and disable UFW (Uncomplicated Firewall) service
+      service:
+        name: ufw
+        state: stopped
+        enabled: no
+
+    - name: Flush all iptables rules
+      shell: iptables -F
+
+    - name: Flush all iptables nat rules
+      shell: iptables -t nat -F
+
+    - name: Flush all iptables mangle rules
+      shell: iptables -t mangle -F
+
+    - name: Delete all user-defined chains
+      shell: iptables -X
+
+    - name: Set default policies to ACCEPT
+      shell: iptables -P INPUT ACCEPT && iptables -P FORWARD ACCEPT && iptables -P OUTPUT ACCEPT

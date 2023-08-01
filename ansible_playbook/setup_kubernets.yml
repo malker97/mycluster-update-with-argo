@@ -1,0 +1,42 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install kubelet, kubeadm and kubectl
+      apt:
+        name: "{{ packages }}"
+        update_cache: yes
+      vars:
+        packages:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Hold kubelet, kubeadm and kubectl at current version
+      command: apt-mark hold kubelet kubeadm kubectl
+
+- hosts: master
+  become: yes
+  tasks:
+    - name: Initialize the Kubernetes master with specific network CIDR
+      command: kubeadm init --pod-network-cidr=10.5.96.0/20 --apiserver-advertise-address=10.5.96.6
+
+    - name: Create .kube directory
+      command: mkdir -p $HOME/.kube
+
+    - name: Copy Kubernetes admin.conf to user's kube config
+      command: sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+    - name: Change ownership of the kube config file
+      command: sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+- hosts: nodes
+  become: yes
+  tasks:
+    - name: Get the join command from the Kubernetes master
+      command: kubeadm token create --print-join-command
+      register: join_command
+      delegate_to: 45.76.168.49
+
+    - name: Join the node to the cluster
+      command: "{{ join_command.stdout }}"

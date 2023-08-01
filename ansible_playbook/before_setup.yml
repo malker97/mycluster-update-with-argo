@@ -1,0 +1,13 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: Turn off swap
+      command: swapoff -a
+      when: ansible_swaptotal_mb > 0
+
+    - name: Comment swap partition in /etc/fstab
+      replace:
+        path: /etc/fstab
+        regexp: '^(.*swap.*)$'
+        replace: '#\1'
+      when: ansible_swaptotal_mb > 0
